@@ -8,7 +8,7 @@ pub struct InitializeUser<'info>{
     #[account(mut)]
     pub user:Signer<'info>,
     #[account(
-        init,
+        init_if_needed,
         payer=user,
         space=8+UserAccount::INIT_SPACE,
         seeds=[b"user_config",config.key().as_ref(),user.key().as_ref()],

@@ -1,13 +1,13 @@
 use anchor_lang::prelude::*;
 
-use crate::{initialize_config, InitializeConfigAccount};
+use crate::{error::NFTProgramError, initialize_config, InitializeConfigAccount};
 
 #[derive(Accounts)]
 pub struct InitializeConfig<'info>{
     #[account(mut)]
     pub signer:Signer<'info>,
     #[account(
-        init,
+        init_if_needed,
         payer=signer,
         space=8+InitializeConfigAccount::INIT_SPACE,
         seeds=[b"config".as_ref()],
@@ -19,6 +19,9 @@ pub struct InitializeConfig<'info>{
 
 impl<'info>InitializeConfig<'info>{
     pub fn initialize_config(&mut self,platform_fees:u8,bumps:InitializeConfigBumps)->Result<()>{
+        if self.config.authority!=Pubkey::default(){
+            return err!(NFTProgramError::ConfigAlreadyInitialized);
+        }
         self.config.set_inner(InitializeConfigAccount{
             platform_fees,
             bump:bumps.config,

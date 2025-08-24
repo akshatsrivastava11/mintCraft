@@ -10,7 +10,7 @@ use anchor_spl::{
     token::{mint_to, Mint, MintTo, Token, TokenAccount}, token_interface::spl_token_metadata_interface::state::TokenMetadata
 };
 
-use crate::{ContentAccount, InitializeConfigAccount, NftMetadata, UserAccount};
+use crate::{error::NFTProgramError, ContentAccount, InitializeConfigAccount, NftMetadata, UserAccount};
 
 #[derive(Accounts)]
 #[instruction(content_id: u64, nft_name: String, nft_symbol: String)]
@@ -79,6 +79,9 @@ pub struct MintContentAsNFT<'info> {
 impl<'info> MintContentAsNFT<'info> {
     pub fn mint_content_as_nft(&mut self, _content_id: u64, nft_name: String, nft_symbol: String, _bumps: MintContentAsNFTBumps) -> Result<()> {
         // Minting the NFT to the user's ATA
+        if self.nft_metadata.owner!=Pubkey::default(){
+            return err!(NFTProgramError::NftAlreadyMinted);
+        }
         let config_key = self.config.key();
         let creator_key = self.creator.key();
         

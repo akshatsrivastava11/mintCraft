@@ -1,6 +1,6 @@
 use anchor_lang::prelude::{self, *};
 
-use crate::ContentAccount;
+use crate::{error::NFTProgramError, ContentAccount};
 
 #[derive(Accounts)]
 #[instruction(id:u64)]
@@ -21,6 +21,9 @@ pub struct SubmitContent<'info>{
 }
 impl<'info>SubmitContent<'info>{
     pub fn submit_content(&mut self,id:u64,prompt:String,content_ipfs:String,metadata_ipfs:String,ai_model_used:Pubkey,ai_model_royalty:u16,content_type:i64)->Result<()>{
+        if self.content_account.creator!=Pubkey::default(){
+            return err!(NFTProgramError::ContentAlreadyMinted);
+        }
         self.content_account.set_inner(ContentAccount { 
             id:id,
              creator:self.creator.key(),
