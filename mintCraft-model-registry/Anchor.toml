@@ -12,7 +12,7 @@ mint_craft_model_registry = "W626GLKRRbE1rPZnNgi5kHgUUfFTiyzPqdvS196NdaZ"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "devnet"
+cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]

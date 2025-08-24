@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::GlobalState;
+use crate::{error::ModelRegistryError, globalState, GlobalState};
 
 #[derive(Accounts)]
 pub struct InitializeGlobalState<'info>{
@@ -18,6 +18,9 @@ pub struct InitializeGlobalState<'info>{
 }
 impl<'info>InitializeGlobalState<'info>{
     pub fn initialize(&mut self,bumps:InitializeGlobalStateBumps)->Result<()>{
+        if self.global_state.total_models!=0 || self.global_state.authority!=Pubkey::default(){
+            return  err!(ModelRegistryError::AlreadyInitializedGlobalState);
+        } 
         self.global_state.set_inner(GlobalState { 
             authority: self.authority.key(),
              total_models:0, 
@@ -26,4 +29,4 @@ impl<'info>InitializeGlobalState<'info>{
              });
         Ok(())
     }
-}
+} 

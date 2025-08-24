@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::UserConfig;
+use crate::{error::ModelRegistryError, UserConfig};
 
 #[derive(Accounts)]
 pub struct InitializeUser<'info>{
@@ -17,7 +17,11 @@ pub struct InitializeUser<'info>{
     pub system_program:Program<'info,System>
 }
 impl<'info>InitializeUser<'info>{
+    
     pub fn initialize_user(&mut self,bumps:InitializeUserBumps)->Result<()>{
+        if self.user_config.user!=Pubkey::default(){
+            return err!(ModelRegistryError::UserAlreadyInitialized);
+        }
         self.user_config.set_inner(UserConfig{
             ai_models_registered:0,
             user:self.user.key(),

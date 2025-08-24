@@ -2,7 +2,7 @@ use std::thread::sleep;
 
 use anchor_lang::{prelude::*};
 
-use crate::{AiModel, GlobalState,UserConfig};
+use crate::{error::ModelRegistryError, AiModel, GlobalState, UserConfig};
 
 #[derive(Accounts)]
 #[instruction(name:String)]
@@ -30,6 +30,13 @@ pub struct DismantledAiModel<'info>{
 
 impl<'info>DismantledAiModel<'info>{
     pub fn dismantle_ai_model(&mut self,_name:String)->Result<()>{
+        if self.ai_model.owner==Pubkey::default(){
+            return err!(ModelRegistryError::ModelNotFound);
+        }
+        if self.ai_model.owner!=self.signer.key(){
+            return err!(ModelRegistryError::UnauthorizedModelOwner);
+        }
+        
         self.ai_model.is_active=false;
         self.ai_model.Dismantled_at=Some(Clock::get()?.unix_timestamp);
         self.user_config.ai_models_registered-=1;
