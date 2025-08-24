@@ -1,7 +1,7 @@
 use anchor_lang::{prelude::*, system_program::{Transfer,transfer}};
 use anchor_spl::{associated_token::AssociatedToken, token::{ close_account, mint_to, transfer_checked, CloseAccount, Mint, MintTo, Token, TokenAccount, TransferChecked}, token_2022::spl_token_2022::extension::metadata_pointer::processor};
 
-use crate::{marketplace, Listing, Marketplace, UserConfig};
+use crate::{error::MarketplaceError, marketplace, Listing, Marketplace, UserConfig};
 
 #[derive(Accounts)]
 pub struct Purchase<'info>{
@@ -63,6 +63,10 @@ pub struct Purchase<'info>{
 //close the vault
 impl<'info>Purchase<'info>{
     pub fn purchase(&mut self,bumps:PurchaseBumps)->Result<()>{
+        if self.listing.maker==Pubkey::default(){
+            return err!(MarketplaceError::ListingNotFound);
+        }
+
         self.transfer(bumps);
         self.transferSol();
         self.transferfees();

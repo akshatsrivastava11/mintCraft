@@ -1,7 +1,7 @@
 use anchor_lang::{accounts::program, prelude::*};
 use anchor_spl::token::{close_account, transfer_checked, CloseAccount, Mint, Token, TokenAccount, TransferChecked};
 
-use crate::{Listing, Marketplace, UserConfig};
+use crate::{error::MarketplaceError, Listing, Marketplace, UserConfig};
 
 #[derive(Accounts)]
 pub struct Delist<'info>{
@@ -46,6 +46,9 @@ pub struct Delist<'info>{
 //closing the vault
 impl<'info>Delist<'info>{
     pub fn delist(&mut self,bumps:DelistBumps)->Result<()>{
+        if self.listing.maker==Pubkey::default(){
+            return err!(MarketplaceError::ListingNotFound);
+        }
         self.transfer_back(&bumps)?;
         self.close_vault(&bumps)?;
         Ok(())

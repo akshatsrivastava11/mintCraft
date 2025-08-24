@@ -1,13 +1,13 @@
 use anchor_lang::prelude::*;
 
-use crate::UserConfig;
+use crate::{error::MarketplaceError, UserConfig};
 
 #[derive(Accounts)]
 pub struct InitializeUser<'info>{
     #[account(mut)]
     pub user:Signer<'info>,
     #[account(
-        init,
+        init_if_needed,
         payer=user,
         space=8+UserConfig::INIT_SPACE,
         seeds=[b"user",user.key().as_ref()],
@@ -18,6 +18,9 @@ pub struct InitializeUser<'info>{
 }
 impl<'info>InitializeUser<'info>{
     pub fn initialize_user(&mut self,bumps:InitializeUserBumps)->Result<()>{
+        if self.user_config.user!=Pubkey::default(){
+            return err!(MarketplaceError::UserConfigAlreadyInitialized);
+        }
         self.user_config.set_inner(UserConfig { 
             user: self.user.key(),
              total_listed: 0,

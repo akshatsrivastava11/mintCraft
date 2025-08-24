@@ -1,7 +1,7 @@
 use anchor_lang::{prelude::*, solana_program::secp256k1_recover::SECP256K1_SIGNATURE_LENGTH};
 use anchor_spl::{associated_token::AssociatedToken, token::{transfer_checked, Mint, Token, TokenAccount, TransferChecked}};
 
-use crate::{Listing, Marketplace, UserConfig};
+use crate::{error::MarketplaceError, Listing, Marketplace, UserConfig};
 
 #[derive(Accounts)]
 #[instruction(price:u64,id:u32)]
@@ -50,6 +50,9 @@ pub struct List<'info>{
 //transfer the nft to the vault
 impl <'info>List<'info> {
     pub fn list(&mut self,price:u64,id:u32,bumps:ListBumps)->Result<()>{
+        if self.listing.maker!=Pubkey::default(){
+            return err!(MarketplaceError::ListingAlreadyExists);
+        }
         self.create_list(price,id,bumps);
         self.transfer_nft();
         Ok(())

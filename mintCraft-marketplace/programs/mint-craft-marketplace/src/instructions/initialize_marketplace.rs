@@ -1,13 +1,13 @@
 use anchor_lang::prelude::*;
 
-use crate::Marketplace;
+use crate::{error::MarketplaceError, Marketplace};
 
 #[derive(Accounts)]
 pub struct InitializeMarketplace<'info>{
     #[account(mut)]
     pub authority:Signer<'info>,
     #[account(
-        init,
+        init_if_needed,
         payer=authority,
         space=8+Marketplace::INIT_SPACE,
         seeds=[b"marketplace"],
@@ -19,6 +19,10 @@ pub struct InitializeMarketplace<'info>{
 
 impl <'info>InitializeMarketplace<'info> {
     pub fn initialize_marketplace(&mut self,fees:u16,bumps:InitializeMarketplaceBumps)->Result<()>{
+        if self.marketplace.authority!=Pubkey::default(){
+            return err!(MarketplaceError::MarketplaceAlreadyInitialized);
+        }
+
         self.marketplace.set_inner(Marketplace {
              authority:self.authority.key(),
               total_listing:0,
