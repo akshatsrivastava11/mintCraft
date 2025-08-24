@@ -80,6 +80,38 @@ describe("mint-craft-model-registry", () => {
     });
   });
 
+  describe("ReinitializingConfigs",async ()=>{
+        it("should initialize global state", async () => {
+          try {
+            await program.methods.initializeGlobalState().accounts({
+              authority: authority.publicKey,
+              globalState: globalState,
+              systemProgram: SystemProgram.programId,
+            }).signers([authority]).rpc();
+      
+            expect.fail("Global State reinitialization did ont failed as expected");
+            
+          } catch (error) {
+            expect(error.error.errorCode.code).to.equal("AlreadyInitializedGlobalState");
+          }
+    });
+
+    it("should initialize user config", async () => {
+      try {
+        await program.methods.initializeUser().accounts({
+          user: user.publicKey,
+          userConfig: userConfig,
+          systemProgram: SystemProgram.programId,
+        }).signers([user]).rpc();
+        expect.fail("Cannot reinitialize user config");
+        
+      } catch (error) {
+
+        expect(error.error.errorCode.code).to.equal("UserAlreadyInitialized");
+      }
+    });
+  })
+
   describe("AI Model", () => {
     it("should register an AI model", async () => {
       await program.methods
@@ -120,10 +152,9 @@ describe("mint-craft-model-registry", () => {
 
       try {
         await program.account.aiModel.fetch(aiModel);
-        expect.fail("Model account should not exist after dismantle");
+        expect.fail("AI model not found");
       } catch (err) {
-        // console.log(err)
-        expect(err.message).to.include("should not exist");
+        expect(err.message).to.include("AI model not found");
       }
     });
   });
@@ -149,11 +180,7 @@ describe("mint-craft-model-registry", () => {
           assert.fail("Expected transaction to fail, but it succeeded");
         
       } catch (error) {
-        // console.log("an error occured",error);
-
-          console.log("error message is ",error.message);
-
-        // expect(error.message).to.include("should fail to register an AI model with duplicate name");
+        expect(error.error.errorCode.code).to.equal("ModelAlreadyRegistered");
       }
       })
 
@@ -172,9 +199,7 @@ describe("mint-craft-model-registry", () => {
           assert.fail("Expected transaction to fail, but it succeeded");
           
         } catch (error) {
-          // console.log("an error occured",error);
-          console.log("error message is ",error.message);
-        // expect(error.message).to.include("should fail to dismantle an AI model that does not exist");
+          expect(error.error.errorCode.code).to.equal("ConstraintSeeds");
         }
       })
 })

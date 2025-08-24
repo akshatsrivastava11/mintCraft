@@ -1,4 +1,4 @@
-use anchor_lang::{prelude::*};
+use anchor_lang::{prelude::*, solana_program::lamports};
 
 use crate::{error::ModelRegistryError, AiModel, GlobalState, UserConfig};
 
@@ -8,7 +8,7 @@ pub struct RegisterAiModel<'info>{
     #[account(mut)]
     pub signer:Signer<'info>,
     #[account(
-        init,
+        init_if_needed,
         payer=signer,
         space=8+AiModel::INIT_SPACE,
         seeds=[b"ai",name.as_bytes(),signer.key().as_ref(),global_state.key().as_ref()],
@@ -31,13 +31,10 @@ pub struct RegisterAiModel<'info>{
 
 impl <'info>RegisterAiModel<'info> {
     pub fn register_ai_model(&mut self,id:i64,royalty_percentage:u16,api_endpoint:String,description:String,name:String,bumps:RegisterAiModelBumps)->Result<()>{
-        // let name_bytes = name.as_bytes(); // &str is Copy so this is fine
-    
-        if self.ai_model.owner!=Pubkey::default(){
-                return err!(ModelRegistryError::ModelAlreadyRegistered)
-        }
-
         let name_clone=name.clone();
+        if self.ai_model.owner!=Pubkey::default(){
+            return err!(ModelRegistryError::ModelAlreadyRegistered);
+        }
         self.ai_model.set_inner(AiModel { id, owner: self.signer.key(), royalty_percentage, is_active: true, created_at:Clock::get()?.unix_timestamp,Dismantled_at:None  ,api_endpoint,description,name:name,bump:bumps.ai_model});
         self.user_config.ai_models_registered+=1;
         msg!("Debug | name: {:?}", name_clone);

@@ -7,7 +7,7 @@ pub struct InitializeGlobalState<'info>{
     #[account(mut)]
     pub authority:Signer<'info>,
     #[account(
-        init,
+        init_if_needed,
         payer=authority,
         space=8+GlobalState::INIT_SPACE,
         seeds=[b"globalAiState"],
