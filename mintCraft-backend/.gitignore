@@ -1,0 +1,13 @@
+/node_modules
+/package-lock.json
+# /src/database/prisma/schema.prisma
+/src/database/.env
+/src/idl
+/src/clients
+/clients
+clients/
+.env
+/clients/*
+/src/clients
+/.cursor
+/clients/generated
