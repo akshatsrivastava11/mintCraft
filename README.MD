@@ -143,48 +143,6 @@ Open **[http://localhost:3000](http://localhost:3000)**.
 
 ---
 
-## Database (Prisma + PostgreSQL)
-
-Example `schema.prisma` excerpt:
-
-```prisma
-model User {
-  id         String   @id @default(cuid())
-  wallet     String   @unique
-  displayName String?
-  createdAt  DateTime @default(now())
-  usages     Usage[]
-}
-
-model Model {
-  id          String   @id @default(cuid())
-  pubkey      String   @unique
-  owner       String
-  name        String
-  version     String
-  priceLamports BigInt
-  royaltyBps  Int
-  metadataCid String
-  createdAt   DateTime @default(now())
-  usages      Usage[]
-}
-
-model Usage {
-  id          String   @id @default(cuid())
-  modelId     String
-  userId      String?
-  promptHash  String
-  outputCid   String?
-  amountPaid  BigInt
-  signature   String?
-  createdAt   DateTime @default(now())
-  model       Model    @relation(fields: [modelId], references: [id])
-  user        User?    @relation(fields: [userId], references: [id])
-}
-```
-
----
-
 ## Contributing
 
 PRs welcome! Please open an issue to discuss substantial changes.
