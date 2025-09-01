@@ -9,7 +9,7 @@ import {
 } from "@solana/web3.js";
 import { assert, expect } from "chai";
 
-describe("mint-craft-model-registry", () => {
+describe("mintmodel-craft-model-registry", () => {
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
   const program = anchor.workspace
